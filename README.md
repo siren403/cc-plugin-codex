@@ -23,6 +23,23 @@
 
 ---
 
+> **Personal fork notice** — This repository is `siren403/cc-plugin-codex`, a personal fork of
+> [sendbird/cc-plugin-codex](https://github.com/sendbird/cc-plugin-codex) that adds Windows
+> command resolution fixes: `claude` / `codex` subprocess launches unwrap npm-style `.cmd`
+> shims to their real executables instead of failing with `ENOENT`.
+>
+> The fork embeds its own Codex marketplace manifest (`.agents/plugins/marketplace.json`),
+> so it installs directly from this repository — no separate marketplace repo needed:
+>
+> ```bash
+> codex plugin marketplace add siren403/cc-plugin-codex
+> codex plugin add cc@siren403
+> ```
+>
+> Note: `codex plugin list --marketplace siren403` may show no available entries for this
+> layout; the direct `codex plugin add cc@siren403` selector is the supported install path.
+> No upstream PR is planned. Everything below is upstream documentation and still applies.
+
 ## What Is This?
 
 `cc-plugin-codex` turns Codex into a host for Claude Code work.

@@ -21,7 +21,7 @@
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "Claude Code",
-    "shortDescription": "Claude Code Plugin for Codex",
+    "shortDescription": "Claude Code Plugin for Codex — forked from Sendbird with Windows command resolution fixes",
     "longDescription": "Use Claude Code from inside Codex to run read-only reviews, adversarial design reviews, and tracked rescue tasks through a Claude-backed runtime with job status and result retrieval.",
     "developerName": "Sendbird, Inc.",
     "category": "Coding",
