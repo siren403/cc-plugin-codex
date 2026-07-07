@@ -7,6 +7,8 @@ import { spawn } from "node:child_process";
 import readline from "node:readline";
 import process from "node:process";
 
+import { resolveCommandInvocation } from "./command-resolution.mjs";
+
 const CLIENT_INFO = {
   name: "cc-plugin-codex-installer",
   version: "1.0.0",
@@ -41,8 +43,21 @@ function resolveAppServerCommand() {
   return { executable, args };
 }
 
-export async function callCodexAppServer({ cwd, method, params }) {
+/**
+ * Resolve the app-server command into a directly spawnable invocation. On
+ * Windows this unwraps npm-style `.cmd` shims that bare `spawn("codex")`
+ * cannot launch (ENOENT). The CC_PLUGIN_CODEX_EXECUTABLE override is
+ * validated the same way; unrecognized shims fail closed instead of falling
+ * back to a shell. Throws CommandResolutionError with an actionable reason.
+ */
+function resolveAppServerInvocation() {
   const { executable, args } = resolveAppServerCommand();
+  const invocation = resolveCommandInvocation(executable, args);
+  return { executable: invocation.command, args: invocation.args };
+}
+
+export async function callCodexAppServer({ cwd, method, params }) {
+  const { executable, args } = resolveAppServerInvocation();
   const timeoutMs = Number.parseInt(
     process.env.CC_PLUGIN_CODEX_APP_SERVER_TIMEOUT_MS ?? `${DEFAULT_TIMEOUT_MS}`,
     10

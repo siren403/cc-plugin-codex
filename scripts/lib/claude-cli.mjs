@@ -14,9 +14,23 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { normalizePathSlashes, resolvePluginRuntimeRoot } from "./codex-paths.mjs";
+import { resolveCommand } from "./command-resolution.mjs";
 import { getProcessIdentity, validateProcessIdentity } from "./process.mjs";
 
 const CLAUDE_BIN = "claude";
+
+/**
+ * Resolve the `claude` CLI into a directly spawnable invocation. On Windows
+ * this unwraps npm-style `.cmd` shims that bare `spawn("claude")` cannot
+ * launch (ENOENT). Never falls back to a shell.
+ */
+function resolveClaudeCommand(args) {
+  return resolveCommand(CLAUDE_BIN, args);
+}
+
+function formatResolutionFailure(resolution) {
+  return `[${resolution.code}] ${resolution.command}: ${resolution.reason}`;
+}
 export const MAX_STREAM_PARSER_UNKNOWN_EVENTS = 50;
 export const MAX_STREAM_PARSER_PARSE_ERRORS = 50;
 export const MAX_STREAM_PARSER_TOOL_USES = 256;
@@ -77,8 +91,12 @@ function appendTextTail(existing, chunk, maxBytes) {
 // ---------------------------------------------------------------------------
 
 export function getClaudeAvailability(cwd) {
+  const invocation = resolveClaudeCommand(["--version"]);
+  if (!invocation.ok) {
+    return { available: false, detail: formatResolutionFailure(invocation) };
+  }
   try {
-    const result = spawnSync(CLAUDE_BIN, ["--version"], {
+    const result = spawnSync(invocation.command, invocation.args, {
       cwd,
       encoding: "utf8",
       timeout: 10_000,
@@ -95,7 +113,11 @@ export function getClaudeAuthStatus(cwd) {
     return { available: true, loggedIn: true, detail: "API key configured" };
   }
   try {
-    const result = spawnSync(CLAUDE_BIN, ["auth", "status"], {
+    const invocation = resolveClaudeCommand(["auth", "status"]);
+    if (!invocation.ok) {
+      throw new Error(formatResolutionFailure(invocation));
+    }
+    const result = spawnSync(invocation.command, invocation.args, {
       cwd,
       encoding: "utf8",
       timeout: 10_000,
@@ -717,8 +739,24 @@ export async function runClaudeTurn(cwd, prompt, options = {}) {
     ...options,
   });
 
+  const invocation = resolveClaudeCommand(args);
+  if (!invocation.ok) {
+    return {
+      status: "failed",
+      exitCode: -1,
+      sessionId: null,
+      finalMessage: "",
+      structuredOutput: null,
+      toolUses: [],
+      touchedFiles: [],
+      stderr: formatResolutionFailure(invocation),
+      pid: undefined,
+      pidIdentity: null,
+    };
+  }
+
   return new Promise((resolve, reject) => {
-    const proc = spawn(CLAUDE_BIN, args, {
+    const proc = spawn(invocation.command, invocation.args, {
       cwd,
       detached: true, // new process group for safe cancellation
       stdio: ["ignore", "pipe", "pipe"], // stdin ignored — prompt is passed as CLI arg
