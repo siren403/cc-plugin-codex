@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$PLUGIN_ROOT/hooks/session-lifecycle-hook.mjs\"",
+            "command": "node -e 'const{pathToFileURL}=require(`node:url`);const r=process.env.PLUGIN_ROOT||process.env.CLAUDE_PLUGIN_ROOT;if(!r){console.error(`cc: PLUGIN_ROOT env is not set`);process.exit(1)}import(pathToFileURL(r+`/hooks/session-lifecycle-hook.mjs`).href).catch(e=>{console.error(e&&e.stack||String(e));process.exit(1)})'",
             "statusMessage": "Initializing Claude Code bridge"
           }
         ]
@@ -18,7 +18,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$PLUGIN_ROOT/hooks/session-lifecycle-hook.mjs\" SessionEnd",
+            "command": "node -e 'const{pathToFileURL}=require(`node:url`);const r=process.env.PLUGIN_ROOT||process.env.CLAUDE_PLUGIN_ROOT;if(!r){console.error(`cc: PLUGIN_ROOT env is not set`);process.exit(1)}process.argv[2]=`SessionEnd`;import(pathToFileURL(r+`/hooks/session-lifecycle-hook.mjs`).href).catch(e=>{console.error(e&&e.stack||String(e));process.exit(1)})'",
             "statusMessage": "Cleaning up Claude Code bridge jobs"
           }
         ]
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$PLUGIN_ROOT/hooks/stop-review-gate-hook.mjs\"",
+            "command": "node -e 'const{pathToFileURL}=require(`node:url`);const r=process.env.PLUGIN_ROOT||process.env.CLAUDE_PLUGIN_ROOT;if(!r){console.error(`cc: PLUGIN_ROOT env is not set`);process.exit(1)}import(pathToFileURL(r+`/hooks/stop-review-gate-hook.mjs`).href).catch(e=>{console.error(e&&e.stack||String(e));process.exit(1)})'",
             "timeout": 900
           }
         ]
@@ -41,7 +41,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$PLUGIN_ROOT/hooks/unread-result-hook.mjs\"",
+            "command": "node -e 'const{pathToFileURL}=require(`node:url`);const r=process.env.PLUGIN_ROOT||process.env.CLAUDE_PLUGIN_ROOT;if(!r){console.error(`cc: PLUGIN_ROOT env is not set`);process.exit(1)}import(pathToFileURL(r+`/hooks/unread-result-hook.mjs`).href).catch(e=>{console.error(e&&e.stack||String(e));process.exit(1)})'",
             "statusMessage": "Checking for unread Claude Code results"
           }
         ]
